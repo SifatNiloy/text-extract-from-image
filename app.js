@@ -4,28 +4,26 @@ const Tesseract = require('tesseract.js');
 const path = require('path');
 const fs = require('fs');
 
-// Initialize the app
+// initializing
 const app = express();
 
-// Set up multer for file upload
+// Setting up for file upload
 const upload = multer({ dest: 'uploads/' });
 
-// Endpoint to upload and process image
+// For upload and process image
 app.post('/extract-text', upload.single('image'), (req, res) => {
   const imagePath = path.join(__dirname, req.file.path);
 
-  // Run Tesseract to extract text from the image
-  Tesseract.recognize(imagePath, 'eng', {
-    logger: info => console.log(info) // Log progress (optional)
+  // Running Tesseract to extract text from the image
+  Tesseract.recognize(imagePath, 'ben+eng', {
+    logger: info => console.log(info),
+    langPath: 'https://tessdata.projectnaptha.com/4.0.0'  // to load the bengali language data
   })
   .then(({ data: { text } }) => {
-    // Split the text into lines and join them without newlines
+    
     const cleanedText = text.split(/\r?\n/).join(' ').trim();
-
-    // Send the cleaned extracted text as the response
     res.json({ extractedText: cleanedText });
 
-    // Clean up the uploaded file after processing
     fs.unlinkSync(imagePath);
   })
   .catch(err => {
@@ -34,7 +32,6 @@ app.post('/extract-text', upload.single('image'), (req, res) => {
   });
 });
 
-// Start the server
 app.listen(3000, () => {
   console.log('Server running on port 3000');
 });
